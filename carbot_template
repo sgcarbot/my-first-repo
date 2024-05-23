@@ -1,0 +1,375 @@
+import telegram
+from telegram.ext import Updater, CommandHandler, ConversationHandler, MessageHandler, Filters, PreCheckoutQueryHandler
+
+OPTION_1, OPTION_2, OPTION_3, OPTION_4, OPTION_6, OPTION_7, OPTION_8, OPTION_9, OPTION_10, PAYMENT = range(10)
+
+def start(update, context):
+    context.user_data.clear()
+    user = update.effective_user
+    username = user.username
+
+    context.bot.send_message(chat_id=update.message.chat_id,
+                             text=f"Hello\! Welcome to the Motorist bot\!",
+                             parse_mode='MarkdownV2')
+    context.bot.send_message(chat_id=update.message.chat_id,
+                             text="Choose what you would like to do\!",
+                             parse_mode='MarkdownV2',
+                             reply_markup=telegram.ReplyKeyboardMarkup([['Sell my Vehicle'],
+                                                                        ['Vehicle Valuation'],
+                                                                        ['COE Renewal Loan'],
+                                                                        ['Scarp/Export my car'],
+                                                                        ['Insurance Quote'],
+                                                                        ['Warranty'],
+                                                                        ['Loan & Paperwork Support']],
+                                                                       resize_keyboard=True,
+                                                                       one_time_keyboard=True))
+    return OPTION_1
+
+def option_1(update, context):
+    option_1 = update.message.text
+    context.user_data['option_1'] = option_1
+    user = update.effective_user
+    username = user.username
+
+    if option_1 == 'Loan & Paperwork Support':
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="Choose your next step\!",
+                                 parse_mode='MarkdownV2',
+                                 reply_markup=telegram.ReplyKeyboardMarkup([['Apply for Car Loan support'],
+                                                                            ['What support will I get?'],
+                                                                            ['FAQs'],
+                                                                            ['Download Forms'],
+                                                                            ['Car Loan Calculator']],
+                                                                           resize_keyboard=True))
+
+        return OPTION_2
+
+
+    if option_1 == 'Sell my Vehicle':
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=f"*Why sell your car with Motorist?*\n\n1️⃣ *Singapore's Most Trusted Platform*\n\nOur 4\.9\/5 stars on both Facebook and Google Review can't be wrong\. We also transact the most number of cars in Singapore, handling an average of 800 cases each month\.\n\n2️⃣ *Safe and Secure*\n\nWe are here to protect consumers from unethical dealers\. That is why we have strict quality control measures in place\. We also only work with reputable LTA\-approved partners\.\n\n3️⃣ *Seamless and Convenient*\n\nWe will help you obtain the highest price for your car within one day from our network of 1,000 certified dealers\. With Motorist, you will never have to visit multiple car dealerships again\.\n\n4️⃣ *Transparent and Flexible*\n\nWe understand if you have doubts\. That is why we made it our promise to never force a sale on our customers\. If you are uncertain and require more time to decide, simply let us know\!",
+                                 parse_mode='MarkdownV2')
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="Please enter your full name to proceed further.")
+        return OPTION_2
+
+    if option_1 == 'Carro Guide':
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="What would like to find out more about?",
+                                 parse_mode='MarkdownV2',
+                                 reply_markup=telegram.ReplyKeyboardMarkup([['Buying'],
+                                                                            ['Selling'],
+                                                                            ['Lease'],
+                                                                            ['Financing'],
+                                                                            ['General']],
+                                                                           resize_keyboard=True))
+
+        return OPTION_2
+
+def option_2(update, context):
+    option_2 = update.message.text
+    option_1 = context.user_data.get('option_1')
+    context.user_data['option_2'] = option_2
+
+    # First condition block for 'Sell my car by bidding'
+    if option_1 == 'Sell my Vehicle':
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="Please choose your ID type.",
+                                 reply_markup=telegram.ReplyKeyboardMarkup([['Singapore NRIC'],
+                                                                            ['Business'],
+                                                                            ['Company'],
+                                                                            ['Club/Association/Organisation'],
+                                                                            ['Foriegn Company'],
+                                                                            ['Foriegn Identification Number'],
+                                                                            ['Foreign Passport'],
+                                                                            ['Limited Liability Partnership'],
+                                                                            ['Limited Partnership'],
+                                                                            ['Malaysia NRIC'],
+                                                                            ['Professional'],
+                                                                            ['Statutory Board']],
+                                                                           resize_keyboard=True,
+                                                                           one_time_keyboard=True))
+        return ConversationHandler.END  # Ensures this still routes appropriately but does not prevent following conditions
+
+    if option_2 == 'What support will I get?':
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="1️⃣ *Car Loans*\n\nWe help buyers apply for car loans and settle any outstanding loans for sellers\.\n\n2️⃣ *Motor Insurance*\n\nWe help buyers apply for motor insurance and refund the balance for sellers\.\n\n3️⃣ *Payments*\n\nWe facilitate the payment process to ensure a smooth and transparent transaction\.\n\n4️⃣ *Ownership Transfer*\n\nWe oversee the entire LTA vehicle transfer process to prevent any hiccups\.",
+                                 parse_mode='MarkdownV2')
+        return ConversationHandler.END
+
+    if option_2 == 'Download Forms':
+        document_url = "https://storage.googleapis.com/text12345678/sales-purchase-agreement.pdf"  # Replace with your actual URL
+        context.bot.send_document(chat_id=update.message.chat_id, document=document_url, caption='*Sales & Purchase Agreements*\n\nTo be signed by both buyer and seller to confirm the purchase of a vehicle', parse_mode="MarkdownV2")
+        document_url = "https://storage.googleapis.com/text12345678/indemnity-form.pdf"  # Replace with your actual URL
+        context.bot.send_document(chat_id=update.message.chat_id, document=document_url, caption='*Indemnity Form*\n\nTo be signed by the buyer before any test drive', parse_mode="MarkdownV2")
+        document_url = "https://storage.googleapis.com/text12345678/receipt.pdf"  # Replace with your actual URL
+        context.bot.send_document(chat_id=update.message.chat_id, document=document_url,
+                                  caption='*Receipt*\n\nTo be issued to the buyer when payment has been made',
+                                  parse_mode="MarkdownV2")
+        return OPTION_3
+
+    if option_2 == 'Car Loan Calculator':
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="Choose your car type\!",
+                                 parse_mode='MarkdownV2',
+                                 reply_markup=telegram.ReplyKeyboardMarkup([['New Car'],
+                                                                            ['Used Car'],
+                                                                            ['COE Car'],
+                                                                            ['COE Bike']],
+                                                                            resize_keyboard=True))
+
+        return OPTION_3
+
+
+
+def option_3(update, context):
+    option_3 = update.message.text
+    context.user_data['option_3'] = option_3
+
+    context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="Please enter your loan amount \(numbers only, exclude dollar sign\)",
+                                 parse_mode='MarkdownV2')
+    return OPTION_4  # Adjust to the correct state as needed
+
+
+def option_4(update, context):
+    print("Option 4 activated")
+    option_4 = update.message.text
+    context.user_data['option_4'] = option_4
+
+    try:
+        option_4 = int(option_4)  # Try to convert the input to an integer
+        context.user_data['option_4'] = option_4
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="Please choose your loan term\.",
+                                 parse_mode='MarkdownV2',
+                                 reply_markup=telegram.ReplyKeyboardMarkup([['12 months'],
+                                                                            ['24 months'],
+                                                                            ['36 months'],
+                                                                            ['48 months'],
+                                                                            ['60 months'],
+                                                                            ['72 months'],
+                                                                            ['84 months'],
+                                                                            ['Input Loan term']],
+                                                                           resize_keyboard=True,
+                                                                           one_time_keyboard=True))
+        return OPTION_6  # Adjust to the correct state as needed
+
+    except ValueError:
+        # If the input is not a valid number, ask the user to try again
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="Invalid input. Please enter a valid number for your loan amount (numbers only, exclude dollar sign).")
+        return OPTION_4  # L
+
+
+def option_6(update, context):
+    option_6 = update.message.text
+    context.user_data['option_6'] = option_6
+
+    context.bot.send_message(chat_id=update.message.chat_id,
+                             text=f"You will be paying *2,487\.66* per month over 36 months with Motorist Financial Services\!",
+                             parse_mode='MarkdownV2')
+
+    return ConversationHandler.END
+
+def option_7(update, context):
+    option_7 = update.message.text
+    context.user_data['option_7'] = option_7
+
+    context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="Choose the type of accessory you want\!",
+                                 parse_mode='MarkdownV2',
+                                 reply_markup=telegram.ReplyKeyboardMarkup([['Batteries'],
+                                                                            ['Grooming'],
+                                                                            ['Camera'],
+                                                                            ['Car Mats'],
+                                                                            ['Wipers'],
+                                                                            ['Lubricants']],
+                                                                           resize_keyboard=True))
+
+    return OPTION_8
+
+def option_8(update, context):
+    option_8 = update.message.text
+    context.user_data['option_8'] = option_8
+
+    image_url = "https://storage.googleapis.com/text12345678/Screenshot%202024-05-20%20at%202.01.28%20AM.png"  # Replace with your actual URL
+    context.bot.send_photo(chat_id=update.message.chat_id, photo=image_url)
+
+    image_url = "https://storage.googleapis.com/text12345678/Screenshot%202024-05-19%20at%206.15.05%20PM.png"  # Replace with your actual URL
+    context.bot.send_photo(chat_id=update.message.chat_id, photo=image_url, caption='*3D Royal MAXpider Car Mat Set \(Black\)*', parse_mode= 'MarkdownV2')
+
+    context.bot.send_message(chat_id=update.message.chat_id,
+                             text="Choose which car mat you want\!",
+                             parse_mode='MarkdownV2',
+                             reply_markup=telegram.ReplyKeyboardMarkup([['3D Kagu MAXpider Car Mat Set (Black)'],
+                                                                        ['3D Royal MAXpider Car Mat Set (Black)']],
+                                                                       resize_keyboard=True))
+
+    return OPTION_9
+
+def option_9(update, context):
+    option_9 = update.message.text
+    context.user_data['option_9'] = option_9
+
+    context.bot.send_message(chat_id=update.message.chat_id,
+                             text="Please select your car model.",
+                             reply_markup=telegram.ReplyKeyboardMarkup([['Alfa Romeo'],
+                                                                        ['Alpine'],
+                                                                        ['Aston Martin'],
+                                                                        ['Audi'],
+                                                                        ['Bentley'],
+                                                                        ['BMW'],
+                                                                        ['BMW ALPINA'],
+                                                                        ['BMW M Series'],
+                                                                        ['Brabus'],
+                                                                        ['BYD'],
+                                                                        ['Chana'],
+                                                                        ['Chery'],
+                                                                        ['Chevrolet'],
+                                                                        ['Chrysler'],
+                                                                        ['Citroen'],
+                                                                        ['CUPRA'],
+                                                                        ['Daihatsu'],
+                                                                        ['Dodge'],
+                                                                        ['Dongfeng'],
+                                                                        ['DS'],
+                                                                        ['Ferrari'],
+                                                                        ['Fiat'],
+                                                                        ['Fiat Professional'],
+                                                                        ['Ford'],
+                                                                        ['Foton'],
+                                                                        ['Geely'],
+                                                                        ['Genesis'],
+                                                                        ['Golden Dragon'],
+                                                                        ['Hafei'],
+                                                                        ['Hino'],
+                                                                        ['Honda'],
+                                                                        ['HSV'],
+                                                                        ['Hummer'],
+                                                                        ['Hyundai'],
+                                                                        ['Infiniti'],
+                                                                        ['Isuzu'],
+                                                                        ['Jaguar'],
+                                                                        ['Jeep'],
+                                                                        ['Kia'],
+                                                                        ['Koenigsegg'],
+                                                                        ['Lamborghini'],
+                                                                        ['Land Rover'],
+                                                                        ['Lexus'],
+                                                                        ['Lorinser'],
+                                                                        ['Lotus'],
+                                                                        ['Maserati'],
+                                                                        ['Maxus'],
+                                                                        ['Mazda'],
+                                                                        ['McLaren'],
+                                                                        ['Mercedes-Benz'],
+                                                                        ['MG'],
+                                                                        ['MINI'],
+                                                                        ['Mitsubishi'],
+                                                                        ['Mitsuoka'],
+                                                                        ['Morgan'],
+                                                                        ['Nissan'],
+                                                                        ['Opel'],
+                                                                        ['Pagani'],
+                                                                        ['Peugeot'],
+                                                                        ['Perodua'],
+                                                                        ['Porsche'],
+                                                                        ['Proton'],
+                                                                        ['Renault'],
+                                                                        ['Rolls Royce'],
+                                                                        ['Rover'],
+                                                                        ['RUF'],
+                                                                        ['Saab'],
+                                                                        ['SEAT'],
+                                                                        ['Skoda'],
+                                                                        ['Smart'],
+                                                                        ['Ssangyong'],
+                                                                        ['Subaru'],
+                                                                        ['Suzuki'],
+                                                                        ['Tesla'],
+                                                                        ['Toyota'],
+                                                                        ['Volkswagen'],
+                                                                        ['Volvo'],
+                                                                        ['Wiesmann']],
+                                                                       resize_keyboard=True,
+                                                                       one_time_keyboard=True))
+
+    return OPTION_10
+
+def option_10(update, context):
+    option_10 = update.message.text
+    context.user_data['option_10'] = option_10
+
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text=f"Proceed with checkout!"
+    )
+
+    payment_amount = 23800
+    prices = [telegram.LabeledPrice(label='Payment', amount=payment_amount)]
+
+    payload = {
+        'title': '3D Kagu MAXpider Car Mat',
+        'description': '1 mat',
+        'currency': 'SGD',
+        'start_parameter': 'payment-details'
+    }
+
+    context.bot.send_invoice(
+        chat_id=update.message.chat_id,
+        title=payload['title'],
+        description=payload['description'],
+        payload=str(payload),
+        provider_token='284685063:TEST:NTI2MTU2MDA3NmFj',
+        currency=payload['currency'],
+        prices=prices,
+        start_parameter=payload['start_parameter'],
+        is_flexible=False
+    )
+
+    return PAYMENT
+
+
+def pre_checkout(update, context):
+
+    payload = {
+        'title': '3D Kagu MAXpider Car Mat',
+        'description': '1 mat',
+        'currency': 'SGD',  # Set to your preferred currency
+        'start_parameter': 'payment-details'
+    }
+
+    query = update.pre_checkout_query
+    if query.invoice_payload == str(payload):
+        context.bot.answer_pre_checkout_query(pre_checkout_query_id=query.id, ok=True)
+    else:
+        context.bot.answer_pre_checkout_query(pre_checkout_query_id=query.id, ok=False,
+                                              error_message="Payment failed. Please try again.")
+
+def successful_payment(update, context):
+    update.message.reply_text("Thank you for your payment! Your car mat will be delivered to you in 2-3 working days.")
+
+updater = Updater(token='7193726694:AAHY-7f3rspTU-MRMr2YUO6p1-4H4UduGWU', use_context=True)
+dispatcher = updater.dispatcher
+
+start_handler = CommandHandler('start', start)
+conv_handler = ConversationHandler(
+    entry_points=[start_handler],
+    states={
+        OPTION_1: [MessageHandler(Filters.text, option_1)],
+        OPTION_2: [MessageHandler(Filters.text, option_2)],
+        OPTION_3: [MessageHandler(Filters.text, option_3)],
+        OPTION_4: [MessageHandler(Filters.text, option_4)],
+        OPTION_6: [MessageHandler(Filters.text, option_6)],
+        OPTION_7: [MessageHandler(Filters.text, option_7)],
+        OPTION_8: [MessageHandler(Filters.text, option_8)],
+        OPTION_9: [MessageHandler(Filters.text, option_9)],
+        OPTION_10: [MessageHandler(Filters.text, option_10)],
+        PAYMENT: [MessageHandler(Filters.successful_payment, successful_payment)]},
+    fallbacks=[start_handler],
+)
+
+dispatcher.add_handler(PreCheckoutQueryHandler(pre_checkout))
+dispatcher.add_handler(conv_handler)
+updater.start_polling()
